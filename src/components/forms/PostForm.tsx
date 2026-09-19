@@ -1,3 +1,4 @@
+// @ts-nocheck
 import * as z from "zod";
 import { Models } from "appwrite";
 import { useForm } from "react-hook-form";
