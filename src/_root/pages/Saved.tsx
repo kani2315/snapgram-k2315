@@ -7,7 +7,7 @@ import { useGetCurrentUser } from "@/lib/react-query/queries";
 const Saved = () => {
   const { data: currentUser } = useGetCurrentUser();
 
-  const savePosts = currentUser?.saves
+  const savePosts = (currentUser?.saves || [])
     .map((savePost: Models.Document) => ({
       ...savePost.post,
       creator: {
@@ -33,7 +33,7 @@ const Saved = () => {
         <Loader />
       ) : (
         <ul className="w-full flex justify-center max-w-5xl gap-9">
-          {savePosts.length === 0 ? (
+          {savePosts?.length === 0 ? (
             <p className="text-light-4">No available posts</p>
           ) : (
             <GridPostList posts={savePosts} showStats={false} />

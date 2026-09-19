@@ -20,13 +20,14 @@ export async function createUserAccount(user: INewUser) {
     if (!newAccount) throw Error;
 
     const avatarUrl = avatars.getInitials(user.name);
+    const avatarString = avatarUrl.href || avatarUrl.toString();
 
     const newUser = await saveUserToDB({
       accountId: newAccount.$id,
       name: newAccount.name,
       email: newAccount.email,
       username: user.username,
-      imageUrl: avatarUrl,
+      imageUrl: avatarString,
     });
 
     return newUser;
@@ -190,7 +191,7 @@ export function getFilePreview(fileId: string) {
 
     if (!fileUrl) throw Error;
 
-    return fileUrl;
+    return fileUrl.href || fileUrl.toString();
   } catch (error) {
     console.log(error);
   }

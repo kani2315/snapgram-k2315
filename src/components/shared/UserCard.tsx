@@ -3,12 +3,15 @@ import { Models } from "appwrite";
 import { Link } from "react-router-dom";
 
 import { Button } from "../ui/button";
+import { useUserContext } from "@/context/AuthContext";
 
 type UserCardProps = {
   user: Models.Document;
 };
 
 const UserCard = ({ user }: UserCardProps) => {
+  const { user: currentUser } = useUserContext();
+  
   return (
     <Link to={`/profile/${user.$id}`} className="user-card">
       <img
@@ -26,7 +29,7 @@ const UserCard = ({ user }: UserCardProps) => {
         </p>
       </div>
 
-      <Button type="button" size="sm" className="shad-button_primary px-5">
+      <Button type="button" size="sm" className={`shad-button_primary px-5 ${user.$id === currentUser.id ? "hidden" : ""}`}>
         Follow
       </Button>
     </Link>
