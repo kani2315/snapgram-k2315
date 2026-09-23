@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
 import { useUserContext } from "@/context/AuthContext";
+import { useDeletePost } from "@/lib/react-query/queries";
+import { Button } from "../ui/button";
 
 type PostCardProps = {
   post: Models.Document;
@@ -12,6 +14,7 @@ type PostCardProps = {
 
 const PostCard = ({ post }: PostCardProps) => {
   const { user } = useUserContext();
+  const { mutate: deletePost } = useDeletePost();
 
   if (!post.creator) return;
 
@@ -46,16 +49,37 @@ const PostCard = ({ post }: PostCardProps) => {
           </div>
         </div>
 
-        <Link
-          to={`/update-post/${post.$id}`}
-          className={`${user.id !== post.creator.$id && "hidden"}`}>
-          <img
-            src={"/assets/icons/edit.svg"}
-            alt="edit"
-            width={20}
-            height={20}
-          />
-        </Link>
+        <div className="flex gap-2">
+          {user.id === post.creator.$id && (
+            <>
+              <Link
+                to={`/update-post/${post.$id}`}
+              >
+                <img
+                  src={"/assets/icons/edit.svg"}
+                  alt="edit"
+                  width={20}
+                  height={20}
+                />
+              </Link>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deletePost({ postId: post.$id, imageId: post.imageId });
+                }}
+                variant="ghost"
+                className="p-0 h-auto"
+              >
+                <img
+                  src={"/assets/icons/delete.svg"}
+                  alt="delete"
+                  width={20}
+                  height={20}
+                />
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <Link to={`/posts/${post.$id}`}>

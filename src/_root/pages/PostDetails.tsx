@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui";
 import { Loader } from "@/components/shared";
-import { GridPostList, PostStats } from "@/components/shared";
+import { GridPostList, PostStats, PostComments } from "@/components/shared";
 
 import {
   useGetPostById,
@@ -89,30 +89,33 @@ const PostDetails = () => {
               </Link>
 
               <div className="flex-center gap-4">
-                <Link
-                  to={`/update-post/${post?.$id}`}
-                  className={`${user.id !== post?.creator.$id && "hidden"}`}>
-                  <img
-                    src={"/assets/icons/edit.svg"}
-                    alt="edit"
-                    width={24}
-                    height={24}
-                  />
-                </Link>
+                {user.id === post?.creator.$id && (
+                  <>
+                    <Link
+                      to={`/update-post/${post?.$id}`}
+                    >
+                      <img
+                        src={"/assets/icons/edit.svg"}
+                        alt="edit"
+                        width={24}
+                        height={24}
+                      />
+                    </Link>
 
-                <Button
-                  onClick={handleDeletePost}
-                  variant="ghost"
-                  className={`ost_details-delete_btn ${
-                    user.id !== post?.creator.$id && "hidden"
-                  }`}>
-                  <img
-                    src={"/assets/icons/delete.svg"}
-                    alt="delete"
-                    width={24}
-                    height={24}
-                  />
-                </Button>
+                    <Button
+                      onClick={handleDeletePost}
+                      variant="ghost"
+                      className="post_details-delete_btn"
+                    >
+                      <img
+                        src={"/assets/icons/delete.svg"}
+                        alt="delete"
+                        width={24}
+                        height={24}
+                      />
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
 
@@ -134,6 +137,8 @@ const PostDetails = () => {
             <div className="w-full">
               <PostStats post={post} userId={user.id} />
             </div>
+
+            <PostComments post={post} currentUser={user} />
           </div>
         </div>
       )}
