@@ -38,6 +38,8 @@ export type IUser = {
   email: string;
   imageUrl: string;
   bio: string;
+  following?: string[];
+  saves?: string[];
 };
 
 export type INewUser = {

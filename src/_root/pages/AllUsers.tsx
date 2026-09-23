@@ -1,9 +1,11 @@
 import { useToast } from "@/components/ui/use-toast";
 import { Loader, UserCard } from "@/components/shared";
 import { useGetUsers } from "@/lib/react-query/queries";
+import { useUserContext } from "@/context/AuthContext";
 
 const AllUsers = () => {
   const { toast } = useToast();
+  const { user: currentUser } = useUserContext();
 
   const { data: creators, isLoading, isError: isErrorCreators } = useGetUsers();
 
@@ -21,7 +23,7 @@ const AllUsers = () => {
           <Loader />
         ) : (
           <ul className="user-grid">
-            {creators?.documents?.map((creator) => (
+            {creators?.documents?.filter(creator => creator.$id !== currentUser.id).map((creator) => (
               <li key={creator?.$id} className="flex-1 min-w-[200px] w-full  ">
                 <UserCard user={creator} />
               </li>

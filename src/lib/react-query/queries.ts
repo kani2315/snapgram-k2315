@@ -23,8 +23,12 @@ import {
   getRecentPosts,
   getInfinitePosts,
   searchPosts,
+  getLikedPosts,
   savePost,
   deleteSavedPost,
+  followUser,
+  createComment,
+  getPostComments,
 } from "@/lib/appwrite/api";
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 
@@ -242,5 +246,73 @@ export const useUpdateUser = () => {
         queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
       });
     },
+  });
+};
+
+// ============================== FOLLOW USER
+export const useFollowUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      currentUserId,
+      followingArray,
+      targetUserId,
+      followerArray,
+    }: {
+      currentUserId: string;
+      followingArray: string[];
+      targetUserId: string;
+      followerArray: string[];
+    }) => followUser(currentUserId, followingArray, targetUserId, followerArray),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+
+// ============================== CREATE COMMENT
+export const useCreateComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      postId,
+      userId,
+      content,
+    }: {
+      postId: string;
+      userId: string;
+      content: string;
+    }) => createComment(postId, userId, content),
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_COMMENTS, variables.postId],
+      });
+    },
+  });
+};
+
+// ============================== GET POST COMMENTS
+export const useGetPostComments = (postId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POST_COMMENTS, postId],
+    queryFn: () => getPostComments(postId),
+    enabled: !!postId,
+  });
+};
+
+// ============================== GET LIKED POSTS
+export const useGetLikedPosts = (userId: string) => {
+  return useQuery({
+    queryKey: ['getLikedPosts', userId],
+    queryFn: () => getLikedPosts(userId),
+    enabled: !!userId,
   });
 };

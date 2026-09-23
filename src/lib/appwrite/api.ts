@@ -20,14 +20,13 @@ export async function createUserAccount(user: INewUser) {
     if (!newAccount) throw Error;
 
     const avatarUrl = avatars.getInitials(user.name);
-    const avatarString = avatarUrl.href || avatarUrl.toString();
 
     const newUser = await saveUserToDB({
       accountId: newAccount.$id,
       name: newAccount.name,
       email: newAccount.email,
       username: user.username,
-      imageUrl: avatarString,
+      imageUrl: avatarUrl,
     });
 
     return newUser;
@@ -91,7 +90,10 @@ export async function getCurrentUser() {
     const currentUser = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
-      [Query.equal("accountId", currentAccount.$id)]
+      [
+        Query.equal("accountId", currentAccount.$id),
+        Query.select(["*", "saves.*", "saves.post.*", "posts.*"])
+      ]
     );
 
     if (!currentUser) throw Error;
@@ -180,13 +182,9 @@ export async function uploadFile(file: File) {
 // ============================== GET FILE URL
 export function getFilePreview(fileId: string) {
   try {
-    const fileUrl = storage.getFilePreview(
+    const fileUrl = storage.getFileView(
       appwriteConfig.storageId,
-      fileId,
-      2000,
-      2000,
-      ImageGravity.Top,
-      100
+      fileId
     );
 
     if (!fileUrl) throw Error;
@@ -214,7 +212,10 @@ export async function searchPosts(searchTerm: string) {
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.search("caption", searchTerm)]
+      [
+        Query.search("caption", searchTerm),
+        Query.select(["*", "creator.*"])
+      ]
     );
 
     if (!posts) throw Error;
@@ -226,7 +227,11 @@ export async function searchPosts(searchTerm: string) {
 }
 
 export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
-  const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(9)];
+  const queries: any[] = [
+    Query.orderDesc("$updatedAt"),
+    Query.limit(9),
+    Query.select(["*", "creator.*"])
+  ];
 
   if (pageParam) {
     queries.push(Query.cursorAfter(pageParam.toString()));
@@ -255,7 +260,8 @@ export async function getPostById(postId?: string) {
     const post = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      postId
+      postId,
+      [Query.select(["*", "creator.*"])]
     );
 
     if (!post) throw Error;
@@ -416,7 +422,11 @@ export async function getUserPosts(userId?: string) {
     const post = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
+      [
+        Query.equal("creator", userId),
+        Query.orderDesc("$createdAt"),
+        Query.select(["*", "creator.*"])
+      ]
     );
 
     if (!post) throw Error;
@@ -433,7 +443,11 @@ export async function getRecentPosts() {
     const posts = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.postCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(20)]
+      [
+        Query.orderDesc("$createdAt"),
+        Query.limit(20),
+        Query.select(["*", "creator.*"])
+      ]
     );
 
     if (!posts) throw Error;
@@ -450,7 +464,10 @@ export async function getRecentPosts() {
 
 // ============================== GET USERS
 export async function getUsers(limit?: number) {
-  const queries: any[] = [Query.orderDesc("$createdAt")];
+  const queries: any[] = [
+    Query.orderDesc("$createdAt"),
+    Query.select(["*", "posts.*"])
+  ];
 
   if (limit) {
     queries.push(Query.limit(limit));
@@ -477,7 +494,8 @@ export async function getUserById(userId: string) {
     const user = await databases.getDocument(
       appwriteConfig.databaseId,
       appwriteConfig.userCollectionId,
-      userId
+      userId,
+      [Query.select(["*", "posts.*"])]
     );
 
     if (!user) throw Error;
@@ -541,6 +559,93 @@ export async function updateUser(user: IUpdateUser) {
     }
 
     return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== FOLLOW USER
+export async function followUser(
+  currentUserId: string,
+  followingArray: string[],
+  targetUserId: string,
+  followerArray: string[]
+) {
+  try {
+    const updatedUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      currentUserId,
+      {
+        following: followingArray,
+      }
+    );
+
+    if (targetUserId && followerArray) {
+       await databases.updateDocument(
+         appwriteConfig.databaseId,
+         appwriteConfig.userCollectionId,
+         targetUserId,
+         {
+           follower: followerArray,
+         }
+       );
+    }
+
+    if (!updatedUser) throw Error;
+    return updatedUser;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== CREATE COMMENT
+export async function createComment(postId: string, userId: string, content: string) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      ID.unique(),
+      {
+        post: postId,
+        creator: userId,
+        content: content,
+      }
+    );
+    if (!newComment) throw Error;
+    return newComment;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET POST COMMENTS
+export async function getPostComments(postId: string) {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentsCollectionId,
+      [Query.equal("post", postId), Query.orderAsc("$createdAt")]
+    );
+    if (!comments) throw Error;
+    return comments;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET LIKED POSTS
+export async function getLikedPosts(userId: string) {
+  try {
+    const posts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.postCollectionId,
+      [Query.contains("likes", userId), Query.orderDesc("$createdAt")]
+    );
+
+    if (!posts) throw Error;
+
+    return posts;
   } catch (error) {
     console.log(error);
   }
