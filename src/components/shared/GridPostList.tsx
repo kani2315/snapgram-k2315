@@ -1,12 +1,13 @@
-// @ts-nocheck
-import { Models } from "appwrite";
+
+
+import { IPostDocument } from "@/types";
 import { Link } from "react-router-dom";
 
 import { PostStats } from "@/components/shared";
 import { useUserContext } from "@/context/AuthContext";
 
 type GridPostListProps = {
-  posts: Models.Document[];
+  posts: IPostDocument[];
   showUser?: boolean;
   showStats?: boolean;
 };
@@ -21,12 +22,12 @@ const GridPostList = ({
   return (
     <ul className="grid-container">
       {posts.map((post) => (
-        <li key={post.$id} className="relative min-w-80 h-80">
+        <li key={post.$id} className="relative w-full break-inside-avoid mb-7 inline-block">
           <Link to={`/posts/${post.$id}`} className="grid-post_link">
             <img
               src={post.imageUrl}
               alt="post"
-              className="h-full w-full object-cover"
+              className="w-full object-cover"
             />
           </Link>
 

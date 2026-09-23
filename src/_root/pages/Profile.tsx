@@ -6,12 +6,12 @@ import {
   useParams,
   useLocation,
 } from "react-router-dom";
-import React, { useState, useEffect } from "react";
+import React from "react";
 
 import { Button } from "@/components/ui";
 import { LikedPosts } from "@/_root/pages";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById, useFollowUser } from "@/lib/react-query/queries";
+import { useGetUserById, useFollowUser, useUnfollowUser, useGetUserFollowers, useGetUserFollowing } from "@/lib/react-query/queries";
 import { GridPostList, Loader } from "@/components/shared";
 
 interface StabBlockProps {
@@ -33,43 +33,35 @@ const Profile = () => {
 
   const { data: currentUser } = useGetUserById(id || "");
   const { mutate: followUser } = useFollowUser();
+  const { mutate: unfollowUser } = useUnfollowUser();
 
-  const [isFollowing, setIsFollowing] = useState(false);
-  const followingList = user.following?.map((u: any) => typeof u === 'string' ? u : u.$id) || [];
+  const { data: followersObj } = useGetUserFollowers(id || "");
+  const { data: followingObj } = useGetUserFollowing(id || "");
+  const { data: currentUserFollowingObj } = useGetUserFollowing(user.id);
 
-  useEffect(() => {
-    setIsFollowing(followingList.includes(id));
-  }, [user, id, followingList]);
+  const followersCount = followersObj?.documents.length || 0;
+  const followingCount = followingObj?.documents.length || 0;
+
+  const followRecord = currentUserFollowingObj?.documents.find(
+    (record: any) => record.following === id
+  );
+  const isFollowing = !!followRecord;
 
   const handleFollow = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
-    let newFollowing = [...followingList];
-    
-    const followerList = currentUser?.follower?.map((u: any) => typeof u === 'string' ? u : u.$id) || [];
-    let newFollower = [...followerList];
 
     if (isFollowing) {
-      newFollowing = newFollowing.filter((fId) => fId !== id);
-      newFollower = newFollower.filter((fId) => fId !== user.id);
-    } else {
-      newFollowing.push(id || "");
-      newFollower.push(user.id);
-    }
-
-    setIsFollowing(!isFollowing);
-    followUser(
-      { 
-        currentUserId: user.id, 
-        followingArray: newFollowing,
-        targetUserId: id || "",
-        followerArray: newFollower
-      },
-      {
-        onSuccess: () => {
-          checkAuthUser();
-        }
+      if (followRecord) {
+        unfollowUser(followRecord.$id, {
+          onSuccess: () => checkAuthUser()
+        });
       }
-    );
+    } else {
+      followUser(
+        { followerId: user.id, followingId: id || "" },
+        { onSuccess: () => checkAuthUser() }
+      );
+    }
   };
 
   if (!currentUser)
@@ -102,8 +94,8 @@ const Profile = () => {
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
               <StatBlock value={(currentUser.posts || []).length} label="Posts" />
-              <StatBlock value={(currentUser.follower || []).length} label="Followers" />
-              <StatBlock value={(currentUser.following || []).length} label="Following" />
+              <StatBlock value={followersCount} label="Followers" />
+              <StatBlock value={followingCount} label="Following" />
             </div>
 
             <p className="small-medium md:base-medium text-center xl:text-left mt-7 max-w-screen-sm">

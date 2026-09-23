@@ -1,5 +1,6 @@
 import { GridPostList, Loader } from "@/components/shared";
 import { useGetCurrentUser, useGetLikedPosts } from "@/lib/react-query/queries";
+import { IPostDocument } from "@/types";
 
 const LikedPosts = () => {
   const { data: currentUser } = useGetCurrentUser();
@@ -20,7 +21,7 @@ const LikedPosts = () => {
         <p className="text-light-4">No liked posts</p>
       )}
 
-      <GridPostList posts={likedPosts} showStats={false} />
+      <GridPostList posts={likedPosts as unknown as IPostDocument[]} showStats={false} />
     </>
   );
 };

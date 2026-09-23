@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui";
 import { Loader } from "@/components/shared";
 import { GridPostList, PostStats, PostComments } from "@/components/shared";
+import { IPostDocument } from "@/types";
 
 import {
   useGetPostById,
@@ -23,12 +24,12 @@ const PostDetails = () => {
   );
   const { mutate: deletePost } = useDeletePost();
 
-  const relatedPosts = userPosts?.documents.filter(
-    (userPost) => userPost.$id !== id
-  );
+  const relatedPosts = (userPosts as any)?.documents.filter(
+    (userPost: any) => userPost.$id !== id
+  ) as IPostDocument[];
 
   const handleDeletePost = () => {
-    deletePost({ postId: id, imageId: post?.imageId });
+    deletePost({ postId: id || "", imageId: post?.imageId || "" });
     navigate(-1);
   };
 
@@ -124,7 +125,7 @@ const PostDetails = () => {
             <div className="flex flex-col flex-1 w-full small-medium lg:base-regular">
               <p>{post?.caption}</p>
               <ul className="flex gap-1 mt-2">
-                {post?.tags.map((tag: string, index: string) => (
+                {post?.tags.map((tag: string, index: number) => (
                   <li
                     key={`${tag}${index}`}
                     className="text-light-3 small-regular">
@@ -135,7 +136,7 @@ const PostDetails = () => {
             </div>
 
             <div className="w-full">
-              <PostStats post={post} userId={user.id} />
+              <PostStats post={post as IPostDocument} userId={user.id} />
             </div>
 
             <PostComments post={post} currentUser={user} />

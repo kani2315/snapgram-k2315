@@ -1,17 +1,16 @@
-// @ts-nocheck
-import { Models } from "appwrite";
 
 import { GridPostList, Loader } from "@/components/shared";
 import { useGetCurrentUser } from "@/lib/react-query/queries";
+
 
 const Saved = () => {
   const { data: currentUser } = useGetCurrentUser();
 
   const savePosts = (currentUser?.saves || [])
-    .map((savePost: Models.Document) => ({
+    .map((savePost: any) => ({
       ...savePost.post,
       creator: {
-        imageUrl: currentUser.imageUrl,
+        imageUrl: currentUser?.imageUrl,
       },
     }))
     .reverse();

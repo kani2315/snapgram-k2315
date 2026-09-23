@@ -1,3 +1,28 @@
+import { Models } from "appwrite";
+
+export interface IUserDocument extends Models.Document {
+  name: string;
+  username: string;
+  email: string;
+  imageUrl: string;
+  bio: string;
+  saves: any[];
+  follower: any[];
+  following: any[];
+  posts?: IPostDocument[];
+  imageId: string;
+}
+
+export interface IPostDocument extends Models.Document {
+  caption: string;
+  tags: string[];
+  imageUrl: string;
+  imageId: string;
+  location: string;
+  creator: IUserDocument;
+  likes: IUserDocument[];
+}
+
 export type INavLink = {
   imgURL: string;
   route: string;

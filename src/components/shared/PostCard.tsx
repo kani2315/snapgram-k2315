@@ -1,6 +1,7 @@
-// @ts-nocheck
-import { Models } from "appwrite";
+
+
 import { Link } from "react-router-dom";
+import { IPostDocument } from "@/types";
 
 import { PostStats } from "@/components/shared";
 import { multiFormatDateString } from "@/lib/utils";
@@ -9,7 +10,7 @@ import { useDeletePost } from "@/lib/react-query/queries";
 import { Button } from "../ui/button";
 
 type PostCardProps = {
-  post: Models.Document;
+  post: IPostDocument;
 };
 
 const PostCard = ({ post }: PostCardProps) => {
@@ -86,7 +87,7 @@ const PostCard = ({ post }: PostCardProps) => {
         <div className="small-medium lg:base-medium py-5">
           <p>{post.caption}</p>
           <ul className="flex gap-1 mt-2">
-            {(post.tags || []).map((tag: string, index: string) => (
+            {(post.tags || []).map((tag: string, index: number) => (
               <li key={`${tag}${index}`} className="text-light-3 small-regular">
                 #{tag}
               </li>

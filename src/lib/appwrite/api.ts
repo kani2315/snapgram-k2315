@@ -1,7 +1,7 @@
 import { ID, Query } from "appwrite";
 
 import { appwriteConfig, account, databases, storage, avatars } from "./config";
-import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser, IPostDocument, IUserDocument } from "@/types";
 
 // ============================================================
 // AUTH
@@ -158,7 +158,7 @@ export async function createPost(post: INewPost) {
       throw Error;
     }
 
-    return newPost;
+    return newPost as unknown as IPostDocument;
   } catch (error) {
     console.log(error);
   }
@@ -220,7 +220,7 @@ export async function searchPosts(searchTerm: string) {
 
     if (!posts) throw Error;
 
-    return posts;
+    return posts as unknown as { documents: IPostDocument[] };
   } catch (error) {
     console.log(error);
   }
@@ -246,7 +246,7 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
 
     if (!posts) throw Error;
 
-    return posts;
+    return posts as unknown as { documents: IPostDocument[] };
   } catch (error) {
     console.log(error);
   }
@@ -266,7 +266,7 @@ export async function getPostById(postId?: string) {
 
     if (!post) throw Error;
 
-    return post;
+    return post as unknown as IPostDocument;
   } catch (error) {
     console.log(error);
   }
@@ -330,7 +330,7 @@ export async function updatePost(post: IUpdatePost) {
       await deleteFile(post.imageId);
     }
 
-    return updatedPost;
+    return updatedPost as unknown as IPostDocument;
   } catch (error) {
     console.log(error);
   }
@@ -431,7 +431,7 @@ export async function getUserPosts(userId?: string) {
 
     if (!post) throw Error;
 
-    return post;
+    return post as unknown as IPostDocument;
   } catch (error) {
     console.log(error);
   }
@@ -452,7 +452,7 @@ export async function getRecentPosts() {
 
     if (!posts) throw Error;
 
-    return posts;
+    return posts as unknown as { documents: IPostDocument[] };
   } catch (error) {
     console.log(error);
   }
@@ -482,7 +482,7 @@ export async function getUsers(limit?: number) {
 
     if (!users) throw Error;
 
-    return users;
+    return users as unknown as { documents: IUserDocument[] };
   } catch (error) {
     console.log(error);
   }
@@ -500,7 +500,7 @@ export async function getUserById(userId: string) {
 
     if (!user) throw Error;
 
-    return user;
+    return user as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
   }
@@ -558,42 +558,68 @@ export async function updateUser(user: IUpdateUser) {
       await deleteFile(user.imageId);
     }
 
-    return updatedUser;
+    return updatedUser as unknown as IUserDocument;
   } catch (error) {
     console.log(error);
   }
 }
 
 // ============================== FOLLOW USER
-export async function followUser(
-  currentUserId: string,
-  followingArray: string[],
-  targetUserId: string,
-  followerArray: string[]
-) {
+export async function followUser(followerId: string, followingId: string) {
   try {
-    const updatedUser = await databases.updateDocument(
+    const newFollow = await databases.createDocument(
       appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      currentUserId,
+      appwriteConfig.followsCollectionId,
+      ID.unique(),
       {
-        following: followingArray,
+        follower: followerId,
+        following: followingId,
       }
     );
+    if (!newFollow) throw Error;
+    return newFollow;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-    if (targetUserId && followerArray) {
-       await databases.updateDocument(
-         appwriteConfig.databaseId,
-         appwriteConfig.userCollectionId,
-         targetUserId,
-         {
-           follower: followerArray,
-         }
-       );
-    }
+// ============================== UNFOLLOW USER
+export async function unfollowUser(followRecordId: string) {
+  try {
+    await databases.deleteDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      followRecordId
+    );
+    return { status: "Ok" };
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-    if (!updatedUser) throw Error;
-    return updatedUser;
+// ============================== GET FOLLOWERS
+export async function getUserFollowers(userId: string) {
+  try {
+    const follows = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      [Query.equal("following", userId)]
+    );
+    return follows;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ============================== GET FOLLOWING
+export async function getUserFollowing(userId: string) {
+  try {
+    const follows = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.followsCollectionId,
+      [Query.equal("follower", userId)]
+    );
+    return follows;
   } catch (error) {
     console.log(error);
   }

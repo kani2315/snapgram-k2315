@@ -27,6 +27,9 @@ import {
   savePost,
   deleteSavedPost,
   followUser,
+  unfollowUser,
+  getUserFollowers,
+  getUserFollowing,
   createComment,
   getPostComments,
 } from "@/lib/appwrite/api";
@@ -253,23 +256,11 @@ export const useUpdateUser = () => {
 export const useFollowUser = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({
-      currentUserId,
-      followingArray,
-      targetUserId,
-      followerArray,
-    }: {
-      currentUserId: string;
-      followingArray: string[];
-      targetUserId: string;
-      followerArray: string[];
-    }) => followUser(currentUserId, followingArray, targetUserId, followerArray),
+    mutationFn: ({ followerId, followingId }: { followerId: string; followingId: string }) =>
+      followUser(followerId, followingId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.GET_USERS],
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID],
@@ -278,6 +269,36 @@ export const useFollowUser = () => {
   });
 };
 
+export const useUnfollowUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (followRecordId: string) => unfollowUser(followRecordId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+
+export const useGetUserFollowers = (userId: string) => {
+  return useQuery({
+    queryKey: ["getUserFollowers", userId],
+    queryFn: () => getUserFollowers(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useGetUserFollowing = (userId: string) => {
+  return useQuery({
+    queryKey: ["getUserFollowing", userId],
+    queryFn: () => getUserFollowing(userId),
+    enabled: !!userId,
+  });
+};
 // ============================== CREATE COMMENT
 export const useCreateComment = () => {
   const queryClient = useQueryClient();

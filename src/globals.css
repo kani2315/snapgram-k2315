@@ -206,11 +206,11 @@
 
   /* Grid Post List */
   .grid-container {
-    @apply w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-7 max-w-5xl;
+    @apply w-full columns-1 sm:columns-2 md:columns-1 lg:columns-2 xl:columns-3 gap-7 max-w-5xl;
   }
 
   .grid-post_link {
-    @apply flex rounded-[24px] border border-dark-4 overflow-hidden cursor-pointer w-full h-full;
+    @apply flex rounded-[24px] border border-dark-4 overflow-hidden cursor-pointer w-full;
   }
 
   .grid-post_user {

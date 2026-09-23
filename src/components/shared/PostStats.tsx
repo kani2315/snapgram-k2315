@@ -1,5 +1,6 @@
-// @ts-nocheck
+
 import { Models } from "appwrite";
+import { IPostDocument } from "@/types";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -12,7 +13,7 @@ import {
 } from "@/lib/react-query/queries";
 
 type PostStatsProps = {
-  post: Models.Document;
+  post: IPostDocument;
   userId: string;
 };
 
@@ -32,7 +33,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const { data: currentUser } = useGetCurrentUser();
 
   const savedPostRecord = currentUser?.saves?.find(
-    (record: Models.Document) => record.post.$id === post.$id
+    (record: any) => record.post.$id === post.$id
   );
 
   useEffect(() => {
