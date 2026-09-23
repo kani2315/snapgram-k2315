@@ -264,7 +264,7 @@ export const useFollowUser = () => {
       targetUserId: string;
       followerArray: string[];
     }) => followUser(currentUserId, followingArray, targetUserId, followerArray),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_CURRENT_USER],
       });
@@ -291,7 +291,7 @@ export const useCreateComment = () => {
       userId: string;
       content: string;
     }) => createComment(postId, userId, content),
-    onSuccess: (data, variables) => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_POST_COMMENTS, variables.postId],
       });

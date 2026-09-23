@@ -13,7 +13,7 @@ type PostCommentsProps = {
 
 const PostComments = ({ post, currentUser }: PostCommentsProps) => {
   const { data: comments, isLoading } = useGetPostComments(post.$id);
-  const { mutate: createComment, isPending: isCreatingComment } = useCreateComment();
+  const { mutate: createComment, isLoading: isCreatingComment } = useCreateComment();
   const [content, setContent] = useState("");
 
   const handleComment = (e: React.FormEvent) => {
