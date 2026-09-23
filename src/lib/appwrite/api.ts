@@ -651,7 +651,11 @@ export async function getPostComments(postId: string) {
     const comments = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.commentsCollectionId,
-      [Query.equal("post", postId), Query.orderAsc("$createdAt")]
+      [
+        Query.equal("post", postId),
+        Query.orderAsc("$createdAt"),
+        Query.select(["*", "creator.*"])
+      ]
     );
     if (!comments) throw Error;
     return comments;
