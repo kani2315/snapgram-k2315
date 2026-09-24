@@ -26,9 +26,9 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
   const [likes, setLikes] = useState<string[]>(likesList);
   const [isSaved, setIsSaved] = useState(false);
 
-  const { mutate: likePost } = useLikePost();
-  const { mutate: savePost } = useSavePost();
-  const { mutate: deleteSavePost } = useDeleteSavedPost();
+  const { mutate: likePost, isLoading: isLiking } = useLikePost();
+  const { mutate: savePost, isLoading: isSaving } = useSavePost();
+  const { mutate: deleteSavePost, isLoading: isDeletingSave } = useDeleteSavedPost();
 
   const { data: currentUser } = useGetCurrentUser();
 
@@ -44,6 +44,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
   ) => {
     e.stopPropagation();
+    if (isLiking) return;
 
     let likesArray = [...likes];
 
@@ -61,6 +62,7 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
   ) => {
     e.stopPropagation();
+    if (isSaving || isDeletingSave) return;
 
     if (savedPostRecord) {
       setIsSaved(false);
