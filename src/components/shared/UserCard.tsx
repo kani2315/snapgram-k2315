@@ -13,17 +13,19 @@ type UserCardProps = {
 
 const UserCard = ({ user }: UserCardProps) => {
   const { user: currentUser, checkAuthUser } = useUserContext();
-  const { mutate: followUser } = useFollowUser();
-  const { mutate: unfollowUser } = useUnfollowUser();
+  const { mutate: followUser, isLoading: isFollowingUser } = useFollowUser();
+  const { mutate: unfollowUser, isLoading: isUnfollowingUser } = useUnfollowUser();
   const { data: followingObj } = useGetUserFollowing(currentUser.id);
   
   const followRecord = followingObj?.documents.find(
     (record: any) => record.following === user.$id
   );
   const isFollowing = !!followRecord;
+  const isProcessing = isFollowingUser || isUnfollowingUser;
 
   const handleFollow = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
+    if (isProcessing) return;
 
     if (isFollowing) {
       if (followRecord) {
@@ -60,9 +62,10 @@ const UserCard = ({ user }: UserCardProps) => {
         type="button"
         size="sm"
         onClick={handleFollow}
+        disabled={isProcessing}
         className={`px-5 ${isFollowing ? "shad-button_dark_4" : "shad-button_primary"} ${currentUser.id === user.$id && "hidden"}`}
       >
-        {isFollowing ? "Following" : "Follow"}
+        {isProcessing ? "Loading..." : isFollowing ? "Following" : "Follow"}
       </Button>
     </Link>
   );

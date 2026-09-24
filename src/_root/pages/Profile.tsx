@@ -32,8 +32,8 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
-  const { mutate: followUser } = useFollowUser();
-  const { mutate: unfollowUser } = useUnfollowUser();
+  const { mutate: followUser, isLoading: isFollowingUser } = useFollowUser();
+  const { mutate: unfollowUser, isLoading: isUnfollowingUser } = useUnfollowUser();
 
   const { data: followersObj } = useGetUserFollowers(id || "");
   const { data: followingObj } = useGetUserFollowing(id || "");
@@ -46,9 +46,11 @@ const Profile = () => {
     (record: any) => record.following === id
   );
   const isFollowing = !!followRecord;
+  const isProcessing = isFollowingUser || isUnfollowingUser;
 
   const handleFollow = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
+    if (isProcessing) return;
 
     if (isFollowing) {
       if (followRecord) {
@@ -122,8 +124,8 @@ const Profile = () => {
               </Link>
             </div>
             <div className={`${user.id === id && "hidden"}`}>
-              <Button type="button" onClick={handleFollow} className={`px-8 ${isFollowing ? "shad-button_dark_4" : "shad-button_primary"}`}>
-                {isFollowing ? "Following" : "Follow"}
+              <Button type="button" onClick={handleFollow} disabled={isProcessing} className={`px-8 ${isFollowing ? "shad-button_dark_4" : "shad-button_primary"}`}>
+                {isProcessing ? "Loading..." : isFollowing ? "Following" : "Follow"}
               </Button>
             </div>
           </div>
