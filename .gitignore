@@ -7,10 +7,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node dependencies & builds
 node_modules
 dist
 dist-ssr
 *.local
+server/node_modules/
+server/dist/
 
 # Editor directories and files
 .vscode/*
@@ -23,3 +26,21 @@ dist-ssr
 *.sln
 *.sw?
 .env
+.env.local
+.env.*.local
+server/.env
+server/.env.local
+
+# Allow env examples
+!.env.example
+!server/.env.example
+
+# Uploads and temporary assets
+server/uploads/posts/*
+!server/uploads/posts/.gitkeep
+server/uploads/avatars/*
+!server/uploads/avatars/.gitkeep
+
+# Temporary submodules & reports
+social_media_app/
+social_media_app.bfg-report/
