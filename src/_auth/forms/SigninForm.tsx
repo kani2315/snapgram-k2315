@@ -30,24 +30,28 @@ const SigninForm = () => {
   });
 
   const handleSignin = async (user: z.infer<typeof SigninValidation>) => {
-    const session = await signInAccount(user);
+    try {
+      const session = await signInAccount(user);
 
-    if (!session) {
-      toast({ title: "Login failed. Please try again." });
-      
-      return;
-    }
+      if (!session) {
+        toast({ title: "Login failed. Please try again." });
+        return;
+      }
 
-    const isLoggedIn = await checkAuthUser();
+      const isLoggedIn = await checkAuthUser();
 
-    if (isLoggedIn) {
-      form.reset();
-
-      navigate("/");
-    } else {
-      toast({ title: "Login failed. Please try again.", });
-      
-      return;
+      if (isLoggedIn) {
+        form.reset();
+        navigate("/");
+      } else {
+        toast({ title: "Login failed. Please try again." });
+        return;
+      }
+    } catch (error: any) {
+      console.log({ error });
+      toast({
+        title: error?.response?.data?.message || "Invalid email or password.",
+      });
     }
   };
 

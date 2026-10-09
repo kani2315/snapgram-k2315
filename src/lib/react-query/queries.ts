@@ -32,7 +32,7 @@ import {
   getUserFollowing,
   createComment,
   getPostComments,
-} from "@/lib/appwrite/api";
+} from "@/lib/api/endpoints";
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 
 // ============================================================
@@ -142,6 +142,15 @@ export const useDeletePost = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_POSTS],
       });
     },
   });
@@ -265,6 +274,12 @@ export const useFollowUser = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["getUserFollowers"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["getUserFollowing"],
+      });
     },
   });
 };
@@ -279,6 +294,12 @@ export const useUnfollowUser = () => {
       });
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["getUserFollowers"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["getUserFollowing"],
       });
     },
   });
