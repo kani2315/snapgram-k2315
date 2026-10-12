@@ -51,10 +51,17 @@ const PostCard = ({ post }: PostCardProps) => {
         </div>
 
         <div className="flex gap-2">
-          {user.id === post.creator.$id && (
+          {Boolean(
+            (user.id || (user as any).$id) &&
+            ((user.id === post.creator.$id) ||
+             (user.id === (post.creator as any).id) ||
+             (user.id === (post.creator as any)._id) ||
+             ((user as any).$id === post.creator.$id) ||
+             ((user as any).$id === (post.creator as any).id))
+          ) && (
             <>
               <Link
-                to={`/update-post/${post.$id}`}
+                to={`/update-post/${post.$id || (post as any).id}`}
               >
                 <img
                   src={"/assets/icons/edit.svg"}
@@ -65,8 +72,9 @@ const PostCard = ({ post }: PostCardProps) => {
               </Link>
               <Button
                 onClick={(e) => {
+                  e.preventDefault();
                   e.stopPropagation();
-                  deletePost({ postId: post.$id, imageId: post.imageId });
+                  deletePost({ postId: post.$id || (post as any).id, imageId: post.imageId });
                 }}
                 variant="ghost"
                 className="p-0 h-auto"

@@ -6,13 +6,24 @@ import { useGetCurrentUser } from "@/lib/react-query/queries";
 const Saved = () => {
   const { data: currentUser } = useGetCurrentUser();
 
-  const savePosts = (currentUser?.saves || [])
-    .map((savePost: any) => ({
-      ...savePost.post,
-      creator: {
-        imageUrl: currentUser?.imageUrl,
-      },
-    }))
+  const rawSaves = currentUser?.saves || (currentUser as any)?.save || [];
+  const savePosts = rawSaves
+    .filter((savePost: any) => savePost && savePost.post)
+    .map((savePost: any) => {
+      const p = typeof savePost.post === "object" ? savePost.post : null;
+      if (!p) return null;
+      return {
+        ...p,
+        $id: p.$id || p.id || p._id,
+        id: p.id || p.$id || p._id,
+        imageUrl: p.imageUrl,
+        creator: p.creator || {
+          name: currentUser?.name || "Creator",
+          imageUrl: currentUser?.imageUrl || "/assets/icons/profile-placeholder.svg",
+        },
+      };
+    })
+    .filter(Boolean)
     .reverse();
 
   return (
@@ -31,13 +42,13 @@ const Saved = () => {
       {!currentUser ? (
         <Loader />
       ) : (
-        <ul className="w-full flex justify-center max-w-5xl gap-9">
+        <div className="w-full flex justify-center max-w-5xl gap-9">
           {savePosts?.length === 0 ? (
             <p className="text-light-4">No available posts</p>
           ) : (
-            <GridPostList posts={savePosts} showStats={false} />
+            <GridPostList posts={savePosts as any} showStats={false} showUser={false} />
           )}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -42,10 +42,20 @@ const Profile = () => {
   const followersCount = followersObj?.documents.length || 0;
   const followingCount = followingObj?.documents.length || 0;
 
-  const followRecord = currentUserFollowingObj?.documents.find(
-    (record: any) => record.following === id
-  );
-  const isFollowing = !!followRecord;
+  const targetId = id || "";
+
+  const isFollowing = 
+    (user.following && user.following.includes(targetId)) ||
+    Boolean(
+      currentUserFollowingObj?.documents?.some(
+        (record: any) =>
+          record.$id === targetId ||
+          record.id === targetId ||
+          record._id === targetId ||
+          record.following === targetId
+      )
+    );
+
   const isProcessing = isFollowingUser || isUnfollowingUser;
 
   const handleFollow = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -53,14 +63,12 @@ const Profile = () => {
     if (isProcessing) return;
 
     if (isFollowing) {
-      if (followRecord) {
-        unfollowUser(followRecord.$id, {
-          onSuccess: () => checkAuthUser()
-        });
-      }
+      unfollowUser(targetId, {
+        onSuccess: () => checkAuthUser()
+      });
     } else {
       followUser(
-        { followerId: user.id, followingId: id || "" },
+        { followerId: user.id, followingId: targetId },
         { onSuccess: () => checkAuthUser() }
       );
     }

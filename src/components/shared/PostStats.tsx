@@ -32,19 +32,31 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
 
   const { data: currentUser } = useGetCurrentUser();
 
-  const savedPostRecord = currentUser?.saves?.find(
-    (record: any) => record.post.$id === post.$id
+  const targetPostId = post?.$id || (post as any)?.id || (post as any)?._id;
+
+  const savedPostRecord = (currentUser?.saves || (currentUser as any)?.save || []).find(
+    (record: any) => {
+      if (!record) return false;
+      const recPostId =
+        record.post?.$id ||
+        record.post?.id ||
+        record.post?._id ||
+        (typeof record.post === "string" ? record.post : null) ||
+        record.$id ||
+        record.id;
+      return recPostId === targetPostId;
+    }
   );
 
   useEffect(() => {
     setIsSaved(!!savedPostRecord);
-  }, [currentUser]);
+  }, [savedPostRecord, currentUser]);
 
   const handleLikePost = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
   ) => {
     e.stopPropagation();
-    if (isLiking) return;
+    if (isLiking || !targetPostId) return;
 
     let likesArray = [...likes];
 
@@ -55,21 +67,29 @@ const PostStats = ({ post, userId }: PostStatsProps) => {
     }
 
     setLikes(likesArray);
-    likePost({ postId: post.$id, likesArray });
+    likePost({ postId: targetPostId, likesArray });
   };
 
   const handleSavePost = (
     e: React.MouseEvent<HTMLImageElement, MouseEvent>
   ) => {
     e.stopPropagation();
-    if (isSaving || isDeletingSave) return;
+    if (isSaving || isDeletingSave || !targetPostId) return;
 
     if (savedPostRecord) {
       setIsSaved(false);
-      return deleteSavePost(savedPostRecord.$id);
+      const recordId =
+        savedPostRecord.$id ||
+        savedPostRecord.id ||
+        savedPostRecord._id ||
+        targetPostId;
+      return deleteSavePost(recordId);
     }
 
-    savePost({ userId: userId, postId: post.$id });
+    savePost({
+      userId: userId || currentUser?.$id || (currentUser as any)?.id,
+      postId: targetPostId,
+    });
     setIsSaved(true);
   };
 

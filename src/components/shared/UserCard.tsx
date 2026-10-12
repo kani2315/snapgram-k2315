@@ -17,10 +17,20 @@ const UserCard = ({ user }: UserCardProps) => {
   const { mutate: unfollowUser, isLoading: isUnfollowingUser } = useUnfollowUser();
   const { data: followingObj } = useGetUserFollowing(currentUser.id);
   
-  const followRecord = followingObj?.documents.find(
-    (record: any) => record.following === user.$id
-  );
-  const isFollowing = !!followRecord;
+  const targetId = user.$id || (user as any).id || (user as any)._id;
+
+  const isFollowing = 
+    (currentUser.following && currentUser.following.includes(targetId)) ||
+    Boolean(
+      followingObj?.documents?.some(
+        (record: any) =>
+          record.$id === targetId ||
+          record.id === targetId ||
+          record._id === targetId ||
+          record.following === targetId
+      )
+    );
+
   const isProcessing = isFollowingUser || isUnfollowingUser;
 
   const handleFollow = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -28,14 +38,12 @@ const UserCard = ({ user }: UserCardProps) => {
     if (isProcessing) return;
 
     if (isFollowing) {
-      if (followRecord) {
-        unfollowUser(followRecord.$id, {
-          onSuccess: () => checkAuthUser()
-        });
-      }
+      unfollowUser(targetId, {
+        onSuccess: () => checkAuthUser()
+      });
     } else {
       followUser(
-        { followerId: currentUser.id, followingId: user.$id },
+        { followerId: currentUser.id, followingId: targetId },
         { onSuccess: () => checkAuthUser() }
       );
     }

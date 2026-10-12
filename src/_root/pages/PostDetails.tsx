@@ -90,10 +90,18 @@ const PostDetails = () => {
               </Link>
 
               <div className="flex-center gap-4">
-                {user.id === post?.creator.$id && (
+                {Boolean(
+                  (user.id || (user as any).$id) &&
+                  post?.creator &&
+                  ((user.id === post.creator.$id) ||
+                   (user.id === (post.creator as any).id) ||
+                   (user.id === (post.creator as any)._id) ||
+                   ((user as any).$id === post.creator.$id) ||
+                   ((user as any).$id === (post.creator as any).id))
+                ) && (
                   <>
                     <Link
-                      to={`/update-post/${post?.$id}`}
+                      to={`/update-post/${post?.$id || (post as any)?.id}`}
                     >
                       <img
                         src={"/assets/icons/edit.svg"}
