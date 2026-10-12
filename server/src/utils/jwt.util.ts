@@ -1,5 +1,7 @@
+import crypto from "crypto";
 import jwt, { type Secret, type SignOptions } from "jsonwebtoken";
 import { type CookieOptions } from "express";
+import bcrypt from "bcryptjs";
 
 export interface ITokenPayload {
   userId: string;
@@ -19,7 +21,18 @@ export const generateAccessToken = (userId: string): string => {
 };
 
 export const generateRefreshToken = (userId: string): string => {
-  return jwt.sign({ userId }, getRefreshSecret(), { expiresIn: getRefreshExpiresIn() });
+  return jwt.sign({ userId, jti: crypto.randomUUID() }, getRefreshSecret(), { expiresIn: getRefreshExpiresIn() });
+};
+
+export const hashRefreshToken = async (token: string): Promise<string> => {
+  const sha = crypto.createHash("sha256").update(token).digest("hex");
+  const salt = await bcrypt.genSalt(10);
+  return bcrypt.hash(sha, salt);
+};
+
+export const compareRefreshToken = async (token: string, hashedToken: string): Promise<boolean> => {
+  const sha = crypto.createHash("sha256").update(token).digest("hex");
+  return bcrypt.compare(sha, hashedToken);
 };
 
 export const verifyAccessToken = (token: string): ITokenPayload => {

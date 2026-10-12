@@ -8,6 +8,8 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
   getRefreshTokenCookieOptions,
+  hashRefreshToken,
+  compareRefreshToken,
 } from "../utils/jwt.util.js";
 import { type SignUpInput, type SignInInput } from "../validations/auth.validation.js";
 
@@ -55,8 +57,7 @@ export const signUp = async (req: Request<{}, {}, SignUpInput>, res: Response): 
     const refreshToken = generateRefreshToken(newUser._id.toString());
 
     // Hash and persist refresh token for revocation and rotation
-    const salt = await bcrypt.genSalt(10);
-    newUser.refreshToken = await bcrypt.hash(refreshToken, salt);
+    newUser.refreshToken = await hashRefreshToken(refreshToken);
     await newUser.save();
 
     // Set HttpOnly refresh cookie
@@ -108,8 +109,7 @@ export const signIn = async (req: Request<{}, {}, SignInInput>, res: Response): 
     const refreshToken = generateRefreshToken(user._id.toString());
 
     // Hash and store new refresh token (token rotation)
-    const salt = await bcrypt.genSalt(10);
-    user.refreshToken = await bcrypt.hash(refreshToken, salt);
+    user.refreshToken = await hashRefreshToken(refreshToken);
     await user.save();
 
     res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
@@ -168,7 +168,7 @@ export const refreshSession = async (req: Request, res: Response): Promise<void>
     }
 
     // Compare incoming refresh token against hashed token in DB
-    const isTokenValid = await bcrypt.compare(incomingRefreshToken, user.refreshToken);
+    const isTokenValid = await compareRefreshToken(incomingRefreshToken, user.refreshToken);
     if (!isTokenValid) {
       // Possible Token Theft Detected! Invalidate user session
       user.refreshToken = undefined;
@@ -185,8 +185,7 @@ export const refreshSession = async (req: Request, res: Response): Promise<void>
     const newAccessToken = generateAccessToken(user._id.toString());
     const newRefreshToken = generateRefreshToken(user._id.toString());
 
-    const salt = await bcrypt.genSalt(10);
-    user.refreshToken = await bcrypt.hash(newRefreshToken, salt);
+    user.refreshToken = await hashRefreshToken(newRefreshToken);
     await user.save();
 
     res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
