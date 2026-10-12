@@ -67,8 +67,11 @@ const SignupForm = () => {
         
         return;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.log({ error });
+      toast({
+        title: error?.response?.data?.message || "Sign up failed. Please try again.",
+      });
     }
   };
 
